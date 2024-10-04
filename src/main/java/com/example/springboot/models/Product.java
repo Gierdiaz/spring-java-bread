@@ -1,4 +1,4 @@
-package com.example.springboot.model;
+package com.example.springboot.models;
 
 import java.io.Serializable;
 import java.util.UUID;
