@@ -22,6 +22,9 @@ import com.example.springboot.repositories.ProductRepository;
 
 import jakarta.validation.Valid;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 
 @RestController
 public class ProductController {
@@ -31,19 +34,24 @@ public class ProductController {
     // Método para listar todos os produtos
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getProducts() {
-       return ResponseEntity.status(HttpStatus.OK).body(productRepository.findAll());
+        List<Product> productsList = productRepository.findAll();   
+        if (!productsList.isEmpty()) {
+           for (Product product : productsList) {
+               product.add(linkTo(methodOn(ProductController.class).getProduct(product.getProductId())).withSelfRel());        
+            }
+        }
+       return ResponseEntity.status(HttpStatus.OK).body(productsList);
     }
 
     // Método para buscar um produto por ID
     @GetMapping("/products/{id}")
     public ResponseEntity<Object> getProduct(@PathVariable("id") UUID id) {
         Optional<Product> product = productRepository.findById(id);
-    
-        if (product.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
+        if (!product.isEmpty()) {
+            product.get().add(linkTo(methodOn(ProductController.class).getProducts()).withSelfRel());
+            return ResponseEntity.status(HttpStatus.OK).body(product.get());
         }
-    
-        return ResponseEntity.status(HttpStatus.OK).body(product.get());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found.");
     }
 
     // Método para criar um produto (utilizando POST)
