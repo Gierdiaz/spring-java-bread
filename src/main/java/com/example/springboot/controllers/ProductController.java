@@ -78,6 +78,6 @@ public class ProductController {
         }
 
         productRepository.delete(existingProduct.get());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Product deleted successfully.");
     }
 }
