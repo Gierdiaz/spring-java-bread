@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.springboot.models.Product;
+import com.example.springboot.models.Patient;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, UUID> {}
+public interface PatientRepository extends JpaRepository<Patient, UUID> {}
