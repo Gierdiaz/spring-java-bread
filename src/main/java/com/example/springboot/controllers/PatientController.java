@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springboot.DTO.PatientDTO;
+import com.example.springboot.models.Address;
 import com.example.springboot.models.Patient;
 import com.example.springboot.repositories.PatientRepository;
 
@@ -75,23 +76,33 @@ public class PatientController {
         return ResponseEntity.status(HttpStatus.OK).body(patient);
     }
 
-    @PostMapping("api/v1/patients")   
+    @PostMapping("api/v1/patients")
     public ResponseEntity<Patient> createPatient(@RequestBody @Valid PatientDTO patientDTO) {
-        Patient patient = new Patient();
-        BeanUtils.copyProperties(patientDTO, patient);
+        Patient patient = patientDTO.toPatient();
         return ResponseEntity.status(HttpStatus.CREATED).body(patientRepository.save(patient));
     }
 
     @PutMapping("api/v1/patients/{id}")
     public ResponseEntity<Object> updatePatient(@PathVariable(value = "id") UUID id, @RequestBody @Valid PatientDTO patientDTO) {
         Optional<Patient> existingPatient = patientRepository.findById(id);
-        if (!existingPatient.isEmpty()) {
+        if (existingPatient.isPresent()) {
             Patient patient = existingPatient.get();
-            BeanUtils.copyProperties(patientDTO, patient, "id");
+            BeanUtils.copyProperties(patientDTO, patient, "address", "patientId");
+            Address address = new Address(
+                    patientDTO.address().street(),
+                    patientDTO.address().number(),
+                    patientDTO.address().complement(),
+                    patientDTO.address().neighborhood(),
+                    patientDTO.address().city(),
+                    patientDTO.address().state(),
+                    patientDTO.address().postalCode()
+            );
+            patient.setAddress(address);
             return ResponseEntity.status(HttpStatus.OK).body(patientRepository.save(patient)); 
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Patient not found.");
     }
+    
 
     @DeleteMapping("api/v1/patients/{id}")
     public ResponseEntity<Object> deletePatient(@PathVariable(value = "id") UUID id) {
